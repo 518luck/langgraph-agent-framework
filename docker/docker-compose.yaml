@@ -4,6 +4,9 @@
 # 下文两种映射的方向统一是「左 = 宿主机，右 = 容器」：
 #   "15432:5432"   端口映射，左边是本机访问时用的端口
 #   ./postgres:xxx 目录挂载，左边是项目里的真实目录
+#
+# 所有服务都不写死 container_name：compose 按「项目名-服务名-序号」自动命名，
+# 本模板复制到多个项目同时启动也不会撞名（隔离靠上面的 name 换名）。
 
 # compose 项目名，决定 Docker Desktop 里的分组名；换成自己项目的名字
 name: agent-framework
@@ -27,7 +30,6 @@ services:
   # Elasticsearch：给需要精确匹配的文本建倒排索引（可选，用不到可删掉本服务）
   elasticsearch:
     build: ./elasticsearch                      # 官方镜像不含 IK 中文分词器，需自行构建
-    container_name: elasticsearch
     restart: unless-stopped
     environment:
       discovery.type: single-node               # 单节点模式，省去集群配置
@@ -40,7 +42,6 @@ services:
   # Kibana：ES 的可视化调试界面，开发期用来看索引、试查询
   kibana:
     image: kibana:8.19.10                       # 版本必须与 ES 一致
-    container_name: kibana
     restart: unless-stopped
     environment:
       # 容器之间靠服务名互访，这里写的是上面的服务名 elasticsearch，
@@ -54,7 +55,6 @@ services:
   # Qdrant：向量库，支撑语义检索（可选，用不到可删掉本服务）
   qdrant:
     image: qdrant/qdrant:v1.16
-    container_name: qdrant
     restart: unless-stopped
     ports:
       - "6333:6333" # HTTP，客户端与 dashboard 都走这个
@@ -66,7 +66,6 @@ services:
   embedding:
     image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
     platform: linux/amd64                       # TEI 的 CPU 镜像只有 amd64，Mac M 系靠模拟运行
-    container_name: embedding
     restart: unless-stopped
     ports:
       - "8081:80"                               # 容器内监听 80，映射到本机 8081
