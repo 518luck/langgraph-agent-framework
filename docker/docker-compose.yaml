@@ -70,11 +70,11 @@ services:
     ports:
       - "8081:80"                               # 容器内监听 80，映射到本机 8081
     environment:
-      MODEL_ID: /models/bge-large-zh-v1.5       # 指向下面挂载进来的模型目录
+      MODEL_ID: /models/Qwen3-Embedding-0.6B    # 指向下面挂载进来的模型目录
       MAX_CONCURRENT_REQUESTS: "16"             # 同时处理的最大请求数，默认 512，本地调小
       MAX_BATCH_TOKENS: "16384"                 # 单批 token 总量上限，影响吞吐
     volumes:
-      - ./embedding/bge-large-zh-v1.5:/models/bge-large-zh-v1.5
+      - ./embedding/Qwen3-Embedding-0.6B:/models/Qwen3-Embedding-0.6B
 
 # 命名卷由 Docker 管理，不在项目目录里。作用是把数据从容器生命周期中独立出来：
 # 删容器不删卷，数据就还在。反之 `docker compose down -v` 会连卷一起删，

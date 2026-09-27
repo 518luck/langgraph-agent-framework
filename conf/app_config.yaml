@@ -30,14 +30,14 @@ qdrant:
   host: localhost
   port: 6333
   # ! 向量维度，必须与 embedding 模型的输出维度一致，否则写入会被拒绝。
-  #   bge-large-zh-v1.5 输出 1024 维，换模型时这里要同步改。
+  #   Qwen3-Embedding-0.6B 输出 1024 维（MRL 支持 32~1024 可调），换模型时这里要同步改。
   embedding_size: 1024
 
 # Embedding 推理服务：把文本转成向量，为向量库提供向量来源
 embedding:
   host: localhost
   port: 8081
-  model: BAAI/bge-large-zh-v1.5         # 需与容器内挂载的模型一致
+  model: Qwen/Qwen3-Embedding-0.6B      # 需与容器内挂载的模型一致
 
 # Elasticsearch：给需要精确匹配的文本建倒排索引
 es:

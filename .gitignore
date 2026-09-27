@@ -16,5 +16,5 @@ wheels/
 logs/
 
 # Embedding 模型权重（体积大，需按 docker/embedding/README.md 单独下载）
-docker/embedding/bge-large-zh-v1.5/*
-!docker/embedding/bge-large-zh-v1.5/.gitkeep
+docker/embedding/Qwen3-Embedding-0.6B/*
+!docker/embedding/Qwen3-Embedding-0.6B/.gitkeep
