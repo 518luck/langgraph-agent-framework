@@ -1,6 +1,6 @@
 # app/clients
 
-适用：各类基础服务客户端（MySQL / ES / Qdrant / Embedding）的创建、持有与关闭。
+适用：各类基础服务客户端（PostgreSQL / ES / Qdrant / Embedding）的创建、持有与关闭。
 
 ## 必须
 

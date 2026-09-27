@@ -17,11 +17,11 @@ logging:
     level: INFO
 
 # 业务数据库：节点要读写的数据放这里
-# 需要第二套库时照这段再加一段，并在 app/clients/mysql_client_manager.py 里新建一个 manager
+# 需要第二套库时照这段再加一段，并在 app/clients/postgres_client_manager.py 里新建一个 manager
 db:
   host: localhost                       # 走 Docker 端口映射，故为 localhost
-  port: 13306                           # ! 必须是 docker-compose.yaml 里映射的宿主机端口
-  user: root
+  port: 15432                           # ! 必须是 docker-compose.yaml 里映射的宿主机端口
+  user: postgres
   password: "12345678"
   database: app
 

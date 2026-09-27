@@ -1,14 +1,14 @@
 # app/repositories
 
-适用：数据访问层，封装 MySQL / Qdrant / ES 的具体读写逻辑。
+适用：数据访问层，封装 PostgreSQL / Qdrant / ES 的具体读写逻辑。
 
 ## 必须
 
-- 按存储分子树：`mysql/`（`dw` / `meta`）、`qdrant/`、`es/`；一个数据源一个模块。
+- 按存储分子树：`postgres/`（`dw` / `meta`）、`qdrant/`、`es/`；一个数据源一个模块。
 - 读写收口在本层：service 不碰 SQL 与 ORM 模型。
 - 客户端与 session 由调用方注入；本层不开启、不提交事务。
 
-### MySQL
+### PostgreSQL
 
 - `dw` 只读：补齐数仓真实信息（字段类型、取值）。
 - `meta` 只写：实体 → mapper → 模型 → `add_all`。

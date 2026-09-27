@@ -1,7 +1,7 @@
 # LangGraph Agent Framework
 
 可复用的智能体后端骨架：FastAPI 提供 SSE 流式接口，LangGraph 编排带状态的节点链路，
-MySQL / Qdrant / ES / Embedding 的客户端与分层结构已就绪，前端（React + Vite）展示进度与结果。
+PostgreSQL / Qdrant / ES / Embedding 的客户端与分层结构已就绪，前端（React + Vite）展示进度与结果。
 
 ## 骨架里有什么
 
@@ -45,7 +45,7 @@ uv run python -m app.agent.graph
 
 | 步骤 | 改哪里 | 做什么 |
 | --- | --- | --- |
-| 1 | `docker/mysql/*.sql` | 建表与初始化数据（只在首次启动执行，改完要 `docker compose down -v` 再起） |
+| 1 | `docker/postgres/*.sql` | 建表与初始化数据（只在首次启动执行，改完要 `docker compose down -v` 再起） |
 | 2 | `conf/app_config.yaml` | 连什么：host / port / database、模型 |
 | 3 | `app/entities` + `app/models` | 业务实体与 ORM 模型 |
 | 4 | `app/repositories` | 领域仓储（仓储 + mapper 模式） |

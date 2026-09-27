@@ -15,5 +15,5 @@ class DataAgentContext(TypedDict):
     """LangGraph Runtime 中传递的上下文对象"""
 
     # 按需补充。示例：
-    #   mysql_repository: MySQLRepository
+    #   postgres_repository: PostgresRepository
     #   embedding_client: Embeddings

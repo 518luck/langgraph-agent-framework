@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.14"
 dependencies = [
-  "asyncmy>=0.2.11",              # MySQL 的高性能 asyncio 驱动，配合 SQLAlchemy 实现全异步数据库访问
+  "asyncpg>=0.31.0",              # PostgreSQL 的高性能 asyncio 驱动，配合 SQLAlchemy 实现全异步数据库访问
   "cryptography>=46.0.7",         # 加密与证书基础库，也是很多网络、数据库和安全相关依赖的底层基础
   "elasticsearch[async]>=8,<9",   # 异步 Elasticsearch 客户端，用于全文检索
   "fastapi[standard]>=0.135.3",   # 高性能异步 Web 框架，作为整个服务的 API 入口

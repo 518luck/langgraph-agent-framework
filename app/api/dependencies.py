@@ -11,7 +11,7 @@ FastAPI 依赖组装
 
 
 
-from app.clients.mysql_client_manager import mysql_client_manager
+from app.clients.postgres_client_manager import postgres_client_manager
 from app.services.query_service import QueryService
 
 
@@ -19,7 +19,7 @@ async def get_session():
     """创建一次请求内使用的数据库 Session"""
 
     # yield 之后的清理逻辑由 async with 负责，FastAPI 会在请求结束后继续执行退出流程
-    async with mysql_client_manager.session_factory() as session:
+    async with postgres_client_manager.session_factory() as session:
         yield session
 
 

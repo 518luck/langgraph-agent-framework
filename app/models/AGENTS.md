@@ -1,6 +1,6 @@
 # app/models
 
-适用：ORM 模型，主要对应 MySQL 中的表结构。
+适用：ORM 模型，主要对应 PostgreSQL 中的表结构。
 
 ## 必须
 
@@ -8,8 +8,8 @@
 
 ### 定义
 
-- 类名 `<表名驼峰>MySQL`；`__tablename__` 用真实表名。
-- 字段用 `Mapped[...]` + `mapped_column(...)`；列名、类型、长度对齐建表脚本 `docker/mysql/04-meta-schema.sql`。
+- 类名 `<表名驼峰>Pg`；`__tablename__` 用真实表名。
+- 字段用 `Mapped[...]` + `mapped_column(...)`；列名、类型、长度对齐建表脚本 `docker/postgres/` 下对应建表脚本。
 - 主键标 `primary_key=True`；联合主键逐列标。
 - JSON 列用 `Mapped[list[...]]` + `JSON`。
 

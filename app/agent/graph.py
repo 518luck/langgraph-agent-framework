@@ -40,7 +40,7 @@ async def demo():
 
     state = DataAgentState(query="你好")
 
-    # 有依赖时在这里注入，例如 {"mysql_repository": MySQLRepository(...)}
+    # 有依赖时在这里注入，例如 {"postgres_repository": PostgresRepository(...)}
     context = DataAgentContext()
 
     # stream_mode="custom" 接收各节点通过 runtime.stream_writer 写出的进度

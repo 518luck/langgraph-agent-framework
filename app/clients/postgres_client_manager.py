@@ -1,4 +1,4 @@
-# MySQL 客户端管理器：创建、复用与关闭异步 Engine 与 Session 工厂。
+# PostgreSQL 客户端管理器：创建、复用与关闭异步 Engine 与 Session 工厂。
 
 import asyncio
 
@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import (
 from app.conf.app_config import DBConfig, app_config
 
 
-class MySQLClientManager:
+class PostgresClientManager:
     def __init__(self, config: DBConfig):
         # 保存数据库配置，后面拼接连接地址要用
         self.config = config
@@ -25,19 +25,19 @@ class MySQLClientManager:
     @property
     def engine(self) -> AsyncEngine:
         # 断言让类型检查器收窄掉 None，同时把“忘记调用 init()”变成明确的报错
-        assert self._engine is not None, "MySQL Engine 尚未初始化，请先调用 init()"
+        assert self._engine is not None, "PostgreSQL Engine 尚未初始化，请先调用 init()"
         return self._engine
 
     @property
     def session_factory(self) -> async_sessionmaker[AsyncSession]:
         assert self._session_factory is not None, (
-            "MySQL Session 工厂尚未初始化，请先调用 init()"
+            "PostgreSQL Session 工厂尚未初始化，请先调用 init()"
         )
         return self._session_factory
 
     def _get_url(self):
-        # mysql+asyncmy 表示：连接 MySQL，并使用 asyncmy 作为异步驱动
-        return f"mysql+asyncmy://{self.config.user}:{self.config.password}@{self.config.host}:{self.config.port}/{self.config.database}?charset=utf8mb4"
+        # postgresql+asyncpg 表示：连接 PostgreSQL，并使用 asyncpg 作为异步驱动
+        return f"postgresql+asyncpg://{self.config.user}:{self.config.password}@{self.config.host}:{self.config.port}/{self.config.database}"
 
     def init(self):
         # 创建异步 Engine，相当于先把“数据库连接能力”准备好
@@ -57,15 +57,15 @@ class MySQLClientManager:
 
 # 全局单例。需要连第二套库时，照这行再加一个 manager，
 # 并在 app/api/lifespan.py 里成对补 init() 与 close()
-mysql_client_manager = MySQLClientManager(app_config.db)
+postgres_client_manager = PostgresClientManager(app_config.db)
 
 
 if __name__ == "__main__":
     # 最小验证：连一下库，跑一条不依赖任何表的查询
-    mysql_client_manager.init()
+    postgres_client_manager.init()
 
     async def test():
-        async with mysql_client_manager.session_factory() as session:
+        async with postgres_client_manager.session_factory() as session:
             result = await session.execute(text("select 1"))
             print("连接正常，select 1 =", result.scalar())
 

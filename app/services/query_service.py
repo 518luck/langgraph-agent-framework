@@ -33,7 +33,7 @@ class QueryService:
         state = DataAgentState(query=query)
 
         # Context 保存本次图执行需要复用的外部依赖，节点通过 runtime.context 读取
-        # 有依赖时在这里塞进去，例如 DataAgentContext(mysql_repository=self.mysql_repository)
+        # 有依赖时在这里塞进去，例如 DataAgentContext(postgres_repository=self.postgres_repository)
         context = DataAgentContext()
 
         try:

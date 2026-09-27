@@ -15,7 +15,7 @@ from fastapi import FastAPI
 
 from app.clients.embedding_client_manager import embedding_client_manager
 from app.clients.es_client_manager import es_client_manager
-from app.clients.mysql_client_manager import mysql_client_manager
+from app.clients.postgres_client_manager import postgres_client_manager
 from app.clients.qdrant_client_manager import qdrant_client_manager
 
 
@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     """管理应用启动和关闭两个阶段的外部资源"""
 
     # 启动阶段：先建立各类外部服务客户端，后续依赖函数会从 manager 中取已初始化对象
-    mysql_client_manager.init()
+    postgres_client_manager.init()
     qdrant_client_manager.init()
     es_client_manager.init()
     embedding_client_manager.init()
@@ -34,6 +34,6 @@ async def lifespan(app: FastAPI):
 
     # 关闭阶段：按应用级资源统一释放连接，避免进程退出前留下未关闭的网络连接
     # Embedding 客户端没有需要显式关闭的连接，所以不在这里处理
-    await mysql_client_manager.close()
+    await postgres_client_manager.close()
     await qdrant_client_manager.close()
     await es_client_manager.close()
