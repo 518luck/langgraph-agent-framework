@@ -5,7 +5,7 @@
 ## 必须
 
 - 一个外部服务一个文件，命名 `<service>_client_manager.py`；类名 `<Service>ClientManager`。
-- 同一服务多套连接按用途命名（如 `meta_mysql_client_manager` / `dw_mysql_client_manager`）。
+- 同一服务多套连接按用途命名：`<用途>_<service>_client_manager`；单套连接用 `<service>_client_manager`。
 - 构造接收该服务的配置对象并存为属性；模块底部导出单例 `<service>_client_manager`。
 - 内部状态私有（`_client` / `_engine` / `_session_factory`），类型 `X | None`，初值 `None`。
 - 对外只读 property：`assert` 非空后返回；断言文案「尚未初始化，请先调用 init()」。

@@ -1,8 +1,8 @@
 /**
  * 首页空状态组件
- * 展示产品入口信息和可点击的示例问数问题
+ * 展示产品入口信息和可点击的示例问题
  */
-import { LineChart, Search, ShoppingBag, Sparkles } from "lucide-react";
+import { Layers, Radio, Sparkles, Workflow } from "lucide-react";
 
 type EmptyStateProps = {
   examples: string[];
@@ -10,9 +10,9 @@ type EmptyStateProps = {
 };
 
 const highlights = [
-  { label: "混合检索", icon: Search },
-  { label: "SQL 闭环", icon: LineChart },
-  { label: "电商数仓", icon: ShoppingBag },
+  { label: "节点编排", icon: Workflow },
+  { label: "流式进度", icon: Radio },
+  { label: "分层架构", icon: Layers },
 ];
 
 export function EmptyState({ examples, onUseExample }: EmptyStateProps) {
@@ -21,10 +21,10 @@ export function EmptyState({ examples, onUseExample }: EmptyStateProps) {
       <div className="mb-10 max-w-3xl">
         <div className="mb-5 inline-flex items-center gap-2 border border-moss/25 bg-moss/10 px-3 py-1.5 text-sm font-semibold text-moss">
           <Sparkles className="h-4 w-4" aria-hidden="true" />
-          Shopkeeper Agent
+          Agent Framework
         </div>
         <h1 className="text-balance text-4xl font-semibold leading-tight text-ink sm:text-6xl">
-          电商问数
+          Agent 工作台
         </h1>
       </div>
 

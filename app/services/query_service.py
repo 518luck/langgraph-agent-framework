@@ -15,23 +15,26 @@ from app.agent.context import DataAgentContext
 from app.agent.graph import graph
 from app.agent.state import DataAgentState
 from app.core.log import logger
-from app.repositories.mysql.dw.dw_mysql_repository import DWMySQLRepository
 
 
 class QueryService:
-    """封装一次查询所需的业务编排逻辑"""
+    """封装一次执行所需的业务编排逻辑
 
-    def __init__(self, dw_mysql_repository: DWMySQLRepository):
-        self.dw_mysql_repository = dw_mysql_repository
+    需要依赖时在 __init__ 里接收，由 app/api/dependencies.py 注入
+    """
+
+    def __init__(self):
+        pass
 
     async def query(self, query: str):
         """执行一次工作流，并逐段产出 SSE 消息"""
 
         # State 只放会被图节点读写和合并的业务数据；节点会写入的字段在入口处一并置空值
-        state = DataAgentState(query=query, keywords=[], sql="", error=None)
+        state = DataAgentState(query=query)
 
         # Context 保存本次图执行需要复用的外部依赖，节点通过 runtime.context 读取
-        context = DataAgentContext(dw_mysql_repository=self.dw_mysql_repository)
+        # 有依赖时在这里塞进去，例如 DataAgentContext(mysql_repository=self.mysql_repository)
+        context = DataAgentContext()
 
         try:
             # stream_mode="custom" 对应节点内部 writer(...) 写出的进度消息

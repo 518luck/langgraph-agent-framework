@@ -1,3 +1,5 @@
+# MySQL 客户端管理器：创建、复用与关闭异步 Engine 与 Session 工厂。
+
 import asyncio
 
 from sqlalchemy import text
@@ -53,27 +55,18 @@ class MySQLClientManager:
             await self._engine.dispose()
 
 
-# 一套连元数据库，一套连数仓模拟库
-meta_mysql_client_manager = MySQLClientManager(app_config.db_meta)
-dw_mysql_client_manager = MySQLClientManager(app_config.db_dw)
+# 全局单例。需要连第二套库时，照这行再加一个 manager，
+# 并在 app/api/lifespan.py 里成对补 init() 与 close()
+mysql_client_manager = MySQLClientManager(app_config.db)
+
 
 if __name__ == "__main__":
-    # 这里演示的是数仓库查询，所以先初始化 dw 这一套客户端
-    dw_mysql_client_manager.init()
+    # 最小验证：连一下库，跑一条不依赖任何表的查询
+    mysql_client_manager.init()
 
     async def test():
-        # 通过 session_factory 创建一次数据库会话
-        async with dw_mysql_client_manager.session_factory() as session:
-            sql = "select * from fact_order limit 10"
-            # text(sql) 表示把原生 SQL 语句交给 SQLAlchemy 执行
-            result = await session.execute(text(sql))
-
-            # mappings().fetchall() 会把结果转成“按列名访问”的行对象列表
-            rows = result.mappings().fetchall()
-
-            # 下面三行只是为了帮助观察返回结果的结构
-            print(type(rows))
-            print(type(rows[0]))
-            print(rows[0]["order_id"])
+        async with mysql_client_manager.session_factory() as session:
+            result = await session.execute(text("select 1"))
+            print("连接正常，select 1 =", result.scalar())
 
     asyncio.run(test())

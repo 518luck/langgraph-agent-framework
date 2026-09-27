@@ -16,24 +16,16 @@ logging:
     enable: true                        # 是否同时输出到控制台
     level: INFO
 
-# 元数据库：存「数仓长什么样」的描述信息（表 / 字段 / 指标）
-db_meta:
+# 业务数据库：节点要读写的数据放这里
+# 需要第二套库时照这段再加一段，并在 app/clients/mysql_client_manager.py 里新建一个 manager
+db:
   host: localhost                       # 走 Docker 端口映射，故为 localhost
   port: 13306                           # ! 必须是 docker-compose.yaml 里映射的宿主机端口
   user: root
   password: "12345678"
-  database: meta
+  database: app
 
-# 数据仓库：模拟真实业务数据（4 张维度表 + 1 张事实表）
-# 除 database 外，其余字段应与 db_meta 保持一致
-db_dw:
-  host: localhost
-  port: 13306                          # 与 db_meta 保持一致
-  user: root
-  password: "12345678"
-  database: dw
-
-# 向量库：存字段与指标描述的向量，供语义检索
+# 向量库：存文本向量，供语义检索
 qdrant:
   host: localhost
   port: 6333
@@ -41,19 +33,19 @@ qdrant:
   #   bge-large-zh-v1.5 输出 1024 维，换模型时这里要同步改。
   embedding_size: 1024
 
-# Embedding 推理服务：把元数据文本和用户问题转成向量
+# Embedding 推理服务：把文本转成向量，为向量库提供向量来源
 embedding:
   host: localhost
   port: 8081
   model: BAAI/bge-large-zh-v1.5         # 需与容器内挂载的模型一致
 
-# Elasticsearch：给维度字段的真实取值建倒排索引，供 SQL 的 WHERE / GROUP BY 取真实值
+# Elasticsearch：给需要精确匹配的文本建倒排索引
 es:
   host: localhost
   port: 9200
   index_name: data_agent                # 全文检索索引名
 
-# 大模型：关键词抽取、字段召回、SQL 生成都依赖它
+# 大模型：需要调模型的节点都用它
 # 通过 OpenAI 兼容协议接入（代码里写的是 model_provider="openai"），换服务商只改这一段
 llm:
   model_name: deepseek/deepseek-v4.1-flash            # DeepSeek 模型名；旧名 deepseek-v4-flash 已下线

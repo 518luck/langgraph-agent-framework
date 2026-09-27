@@ -41,7 +41,7 @@ class LoggingConfig:
 
 @dataclass
 class DBConfig:
-    """数据库连接配置，db_meta 与 db_dw 共用。"""
+    """数据库连接配置。"""
 
     host: str
     port: int
@@ -91,8 +91,7 @@ class AppConfig:
     """配置总入口，字段名与 app_config.yaml 顶层一致。"""
 
     logging: LoggingConfig
-    db_meta: DBConfig
-    db_dw: DBConfig
+    db: DBConfig
     qdrant: QdrantConfig
     embedding: EmbeddingConfig
     es: ESConfig

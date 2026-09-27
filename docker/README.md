@@ -4,10 +4,10 @@
 
 | 服务                      | 容器名        | 本机地址                        | 作用                            |
 | ------------------------- | ------------- | ------------------------------- | ------------------------------- |
-| MySQL                     | mysql         | localhost:13306                 | 元数据库 `meta` + 模拟数仓 `dw` |
-| Elasticsearch             | elasticsearch | http://localhost:9200           | 字段取值的全文检索              |
+| MySQL                     | mysql         | localhost:13306                 | 业务数据库 `app`                 |
+| Elasticsearch             | elasticsearch | http://localhost:9200           | 文本全文检索（可选）            |
 | Kibana                    | kibana        | http://localhost:5601           | ES 的可视化调试界面             |
-| Qdrant                    | qdrant        | http://localhost:6333/dashboard | 字段与指标的向量检索            |
+| Qdrant                    | qdrant        | http://localhost:6333/dashboard | 向量检索（可选）                |
 | Text Embeddings Inference | embedding     | http://localhost:8081/docs      | 文本转向量的推理服务            |
 
 ## 目录说明

@@ -5,11 +5,11 @@
 #   "13306:3306"   端口映射，左边是本机访问时用的端口
 #   ./mysql:xxx    目录挂载，左边是项目里的真实目录
 
-# compose 项目名，决定 Docker Desktop 里的分组名；不写会取目录名（这里是 docker）
-name: shopkeeper-agent
+# compose 项目名，决定 Docker Desktop 里的分组名；换成自己项目的名字
+name: agent-framework
 
 services:
-  # MySQL：存元数据（表 / 字段 / 指标），同时充当业务数仓
+  # MySQL：示例数据库，示例链路从这里取数据
   mysql:
     image: mysql:8.0
     container_name: mysql
@@ -17,7 +17,7 @@ services:
     environment:
       # 只用 root 一个账号。官方镜像会据此创建 root@'%' 并授予全部权限；
       # 反过来把 MYSQL_USER 设成 root 会被镜像直接拒绝，导致容器反复重启。
-      # 密码需与 conf/app_config.yaml 的 db_meta / db_dw 保持一致。
+      # 密码需与 conf/app_config.yaml 的 db 保持一致。
       MYSQL_ROOT_PASSWORD: "12345678"           # 不设这一项镜像会启动失败
     ports:
       # 本机 13306 → 容器 3306。容器里的 MySQL 固定在 3306 监听，只有左边能改；
@@ -30,8 +30,7 @@ services:
     command: --character-set-server=utf8mb4
       --collation-server=utf8mb4_general_ci
 
-  # Elasticsearch：给维度字段的真实取值建倒排索引，
-  # 把「华北地区」这类说法对应到库里真实存在的字段值
+  # Elasticsearch：给需要精确匹配的文本建倒排索引（可选，用不到可删掉本服务）
   elasticsearch:
     build: ./elasticsearch                      # 官方镜像不含 IK 中文分词器，需自行构建
     container_name: elasticsearch
@@ -58,7 +57,7 @@ services:
     depends_on:
       - elasticsearch                           # 只保证启动顺序，不等待 ES 就绪
 
-  # Qdrant：向量库，存字段与指标描述的向量，支撑语义检索
+  # Qdrant：向量库，支撑语义检索（可选，用不到可删掉本服务）
   qdrant:
     image: qdrant/qdrant:v1.16
     container_name: qdrant
@@ -69,7 +68,7 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
 
-  # Embedding 推理服务：把元数据文本和用户问题转成向量，为 Qdrant 提供向量来源
+  # Embedding 推理服务：把文本转成向量，为向量库提供向量来源（可选）
   embedding:
     image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
     platform: linux/amd64                       # TEI 的 CPU 镜像只有 amd64，Mac M 系靠模拟运行

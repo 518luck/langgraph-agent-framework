@@ -64,27 +64,27 @@ async def <node>(state: DataAgentState, runtime: Runtime[DataAgentContext]):
 
 - 需要记录成功日志时，在 `success` 与 `return` 之间加 `logger.info(...)`。
 - 只返回局部更新，不返回整份 state；失败走 `raise`，不吞异常、不靠日志继续往下走。
-- 例外一 `validate_sql`：数据库拒绝属业务结果而非节点失败，内层捕获后写 `success` 与 `error` 字段并返回，由条件边决定走校正还是执行：
+- 例外一 校验类节点：外部服务的“拒绝”属业务结果而非节点失败 —— 内层只捕获那一种异常，写 `success` 与 `error` 字段后返回，由条件边决定下一步；其它异常交给外层抛出：
 
 ```python
         try:
-            await dw_mysql_repository.validate(sql)
+            await <外部校验调用>              # 例如某个仓储的 validate(sql)
             writer({"type": "progress", "step": step, "status": "success"})
             return {"error": None}
-        # ! 只把数据库拒绝这条 SQL 的原因交给条件边；其它异常交给外层抛出
-        except SQLAlchemyError as e:
+        # ! 只把这一个异常交给条件边；其它异常交给外层抛出
+        except <该调用只会抛的异常> as e:
             writer({"type": "progress", "step": step, "status": "success"})
             return {"error": str(e)}
 ```
 
-- 例外二 `run_sql`：额外输出最终结果，前端据此取数据：
+- 例外二 产出最终结果的那个节点：在 `success` 之后额外写一条 `result`，前端据此取数据：
 
 ```python
         writer({"type": "progress", "step": step, "status": "success"})
         writer({"type": "result", "data": result})
 ```
 
-- 载荷只有三类：`progress`（三态）、`result`（仅 `run_sql` 输出）、`error`（由接口层 QueryService 兜底）。
+- 载荷只有三类：`progress`（三态）、`result`（仅产出最终结果的节点写一条）、`error`（由接口层 QueryService 兜底）。
 - 读 state 用下标；依赖从 `runtime.context[...]` 取，不放进 state。
 - 不 import 其它节点；不读配置、不建客户端。
 - 需要模型时走 `PromptTemplate | llm | OutputParser`；结构化输出用 `JsonOutputParser`，纯文本用 `StrOutputParser`。
