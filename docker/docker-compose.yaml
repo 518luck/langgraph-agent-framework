@@ -1,0 +1,93 @@
+# 基础服务编排：一条 `docker compose up -d` 启动本项目依赖的 5 个服务
+# 启动步骤、服务地址与排障见同目录 README.md
+#
+# 下文两种映射的方向统一是「左 = 宿主机，右 = 容器」：
+#   "13306:3306"   端口映射，左边是本机访问时用的端口
+#   ./mysql:xxx    目录挂载，左边是项目里的真实目录
+
+# compose 项目名，决定 Docker Desktop 里的分组名；不写会取目录名（这里是 docker）
+name: shopkeeper-agent
+
+services:
+  # MySQL：存元数据（表 / 字段 / 指标），同时充当业务数仓
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped                     # 异常退出自动拉起，手动停的不拉
+    environment:
+      # 只用 root 一个账号。官方镜像会据此创建 root@'%' 并授予全部权限；
+      # 反过来把 MYSQL_USER 设成 root 会被镜像直接拒绝，导致容器反复重启。
+      # 密码需与 conf/app_config.yaml 的 db_meta / db_dw 保持一致。
+      MYSQL_ROOT_PASSWORD: "12345678"           # 不设这一项镜像会启动失败
+    ports:
+      # 本机 13306 → 容器 3306。容器里的 MySQL 固定在 3306 监听，只有左边能改；
+      # 换端口是为了避让本机或其他项目的 MySQL 占用的 3306。
+      - "13306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql               # 数据持久化，删容器不丢数据
+      - ./mysql:/docker-entrypoint-initdb.d     # 首次启动自动执行其中的建库脚本
+    # 服务端字符集设为 utf8mb4，避免中文字段值乱码
+    command: --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+
+  # Elasticsearch：给维度字段的真实取值建倒排索引，
+  # 把「华北地区」这类说法对应到库里真实存在的字段值
+  elasticsearch:
+    build: ./elasticsearch                      # 官方镜像不含 IK 中文分词器，需自行构建
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node               # 单节点模式，省去集群配置
+      xpack.security.enabled: "false"           # 关闭认证，只适合本地开发
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  # Kibana：ES 的可视化调试界面，开发期用来看索引、试查询
+  kibana:
+    image: kibana:8.19.10                       # 版本必须与 ES 一致
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      # 容器之间靠服务名互访，这里写的是上面的服务名 elasticsearch，
+      # 不能写 localhost —— 容器里的 localhost 指向容器自己
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch                           # 只保证启动顺序，不等待 ES 就绪
+
+  # Qdrant：向量库，存字段与指标描述的向量，支撑语义检索
+  qdrant:
+    image: qdrant/qdrant:v1.16
+    container_name: qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333" # HTTP，客户端与 dashboard 都走这个
+      - "6334:6334" # gRPC，当前项目用不到，先开出来备用
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # Embedding 推理服务：把元数据文本和用户问题转成向量，为 Qdrant 提供向量来源
+  embedding:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
+    platform: linux/amd64                       # TEI 的 CPU 镜像只有 amd64，Mac M 系靠模拟运行
+    container_name: embedding
+    restart: unless-stopped
+    ports:
+      - "8081:80"                               # 容器内监听 80，映射到本机 8081
+    environment:
+      MODEL_ID: /models/bge-large-zh-v1.5       # 指向下面挂载进来的模型目录
+      MAX_CONCURRENT_REQUESTS: "16"             # 同时处理的最大请求数，默认 512，本地调小
+      MAX_BATCH_TOKENS: "16384"                 # 单批 token 总量上限，影响吞吐
+    volumes:
+      - ./embedding/bge-large-zh-v1.5:/models/bge-large-zh-v1.5
+
+# 命名卷由 Docker 管理，不在项目目录里。作用是把数据从容器生命周期中独立出来：
+# 删容器不删卷，数据就还在。反之 `docker compose down -v` 会连卷一起删，
+# MySQL / ES / Qdrant 的数据都会丢。
+volumes:
+  mysql_data:
+  es_data:
+  qdrant_data:

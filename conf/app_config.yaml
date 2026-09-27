@@ -1,0 +1,63 @@
+# 本项目的应用配置，由 app/conf/app_config.py 用 OmegaConf 加载，
+# 并按代码里的 dataclass 做类型校验 —— 字段名写错或漏写会在启动时直接报错。
+#
+# 这里配的是「你自己的 Python 程序」，与 docker/docker-compose.yaml 里的
+# environment（配容器进程）是两条独立的路。
+# ! 两边的账号、密码、端口不会自动同步，改了一处要手动改另一处。
+
+logging:
+  file:
+    enable: true                        # 是否写日志文件
+    level: INFO                         # 文件日志级别
+    path: logs                          # 日志目录，相对项目根目录
+    rotation: "10 MB"                   # 单文件超过 10MB 就切分
+    retention: "7 days"                 # 只保留最近 7 天的日志
+  console:
+    enable: true                        # 是否同时输出到控制台
+    level: INFO
+
+# 元数据库：存「数仓长什么样」的描述信息（表 / 字段 / 指标）
+db_meta:
+  host: localhost                       # 走 Docker 端口映射，故为 localhost
+  port: 13306                           # ! 必须是 docker-compose.yaml 里映射的宿主机端口
+  user: root
+  password: "12345678"
+  database: meta
+
+# 数据仓库：模拟真实业务数据（4 张维度表 + 1 张事实表）
+# 除 database 外，其余字段应与 db_meta 保持一致
+db_dw:
+  host: localhost
+  port: 13306                          # 与 db_meta 保持一致
+  user: root
+  password: "12345678"
+  database: dw
+
+# 向量库：存字段与指标描述的向量，供语义检索
+qdrant:
+  host: localhost
+  port: 6333
+  # ! 向量维度，必须与 embedding 模型的输出维度一致，否则写入会被拒绝。
+  #   bge-large-zh-v1.5 输出 1024 维，换模型时这里要同步改。
+  embedding_size: 1024
+
+# Embedding 推理服务：把元数据文本和用户问题转成向量
+embedding:
+  host: localhost
+  port: 8081
+  model: BAAI/bge-large-zh-v1.5         # 需与容器内挂载的模型一致
+
+# Elasticsearch：给维度字段的真实取值建倒排索引，供 SQL 的 WHERE / GROUP BY 取真实值
+es:
+  host: localhost
+  port: 9200
+  index_name: data_agent                # 全文检索索引名
+
+# 大模型：关键词抽取、字段召回、SQL 生成都依赖它
+# 通过 OpenAI 兼容协议接入（代码里写的是 model_provider="openai"），换服务商只改这一段
+llm:
+  model_name: deepseek/deepseek-v4.1-flash            # DeepSeek 模型名；旧名 deepseek-v4-flash 已下线
+  #   需在加载配置前调用 load_dotenv()，否则会取到逗号后的兜底值，调用时报 401。
+  #   兜底值保证环境变量缺失时配置仍能加载 —— 不带默认值的写法会直接抛错。
+  api_key: ${oc.env:LLM_API_KEY,no-key}
+  base_url: https://api.commandcode.ai/provider/v1    # OpenAI 格式；加 /v1 后缀亦可

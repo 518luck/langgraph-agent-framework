@@ -1,0 +1,20 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# 本地密钥（真实 API Key 等），不要提交
+.env
+
+# 运行时日志输出，由 app/core/log.py 自动生成
+logs/
+
+# Embedding 模型权重（体积大，需按 docker/embedding/README.md 单独下载）
+docker/embedding/bge-large-zh-v1.5/*
+!docker/embedding/bge-large-zh-v1.5/.gitkeep
